@@ -16,8 +16,8 @@ simpleU is a simple unit testing tool for Node.JS that has some special features
 - [simpleS](http://micnic.github.com/simpleS/)
 - [simpleT](http://micnic.github.com/simpleT/)
 
-### [Changelog](https://github.com/micnic/simpleS/wiki/Changelog)
-### [Documentation](https://github.com/micnic/simpleS/wiki/Documentation)
+### [Changelog](https://github.com/micnic/simpleU/wiki/Changelog)
+### [Documentation](https://github.com/micnic/simpleU/wiki/Documentation)
 
 ## Instalation
 
