@@ -1,10 +1,13 @@
 {
 	"name": "simpleu",
-	"version": "0.0.1",
+	"version": "0.0.2",
 	"description": "Simple Unit Testing Tool",
 	"keywords": [
 		"simple",
-		"test"
+		"tdd",
+		"test",
+		"tool",
+		"unit"
 	],
 	"homepage": "http://micnic.github.io/simpleU",
 	"bugs": {

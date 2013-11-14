@@ -1,20 +1,41 @@
-var simpleu = require('simpleu');
+var simpleu = require('../index');
 
-var dummyTest = {
-	'test 1': function (test) {
-		test.ok(true);
-		test.done();
-	},
-	'test suite 1': {
-		'test 2': function (test) {
-			test.ok(true);
-			test.done();
-		},
-		'test 3': function (test) {
-			test.ok(true);
-			test.done();
-		}
-	}
-};
+simpleu({
+    'test one': function (test) {
+        test.params
+        test.ok(true);
+        test.done();
+    },
+    'test four': function (test) {
+        setTimeout(function () {
+            test.done();
+        }, 2000);
+        test.ok(true);
 
-simpleu(dummyTest);
+    },
+    'test five': function (test) {
+        test.ok(true);
+        test.done();
+    },
+    'test six': function (test) {
+        test.ok(true);
+        test.done();
+    }
+}, {
+    'timeout': 1000,
+    'start': function (callback) {
+        console.log('start');
+        callback();
+    },
+    'before': function(callback) {
+        console.log('before');
+        callback();
+    },
+    'after': function(callback) {
+        console.log('after');
+        callback();
+    },
+    'end': function () {
+        console.log('end');
+    }
+});
