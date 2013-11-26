@@ -31,7 +31,7 @@
           <p><img src="https://raw.github.com/micnic/simpleU/master/logo.png"></p>
 
 <h1>
-<a name="simpleu-002" class="anchor" href="#simpleu-002"><span class="octicon octicon-link"></span></a>simpleU 0.0.2</h1>
+<a name="simpleu-003" class="anchor" href="#simpleu-003"><span class="octicon octicon-link"></span></a>simpleU 0.0.3</h1>
 
 <p>simpleU is a simple unit testing tool for Node.JS that has some special features:</p>
 
@@ -54,11 +54,11 @@
 <li><a href="http://micnic.github.com/simpleS/">simpleS</a></li>
 <li><a href="http://micnic.github.com/simpleT/">simpleT</a></li>
 </ul><h3>
-<a name="changelog" class="anchor" href="#changelog"><span class="octicon octicon-link"></span></a><a href="https://github.com/micnic/simpleS/wiki/Changelog">Changelog</a>
+<a name="changelog" class="anchor" href="#changelog"><span class="octicon octicon-link"></span></a><a href="https://github.com/micnic/simpleU/wiki/Changelog">Changelog</a>
 </h3>
 
 <h3>
-<a name="documentation" class="anchor" href="#documentation"><span class="octicon octicon-link"></span></a><a href="https://github.com/micnic/simpleS/wiki/Documentation">Documentation</a>
+<a name="documentation" class="anchor" href="#documentation"><span class="octicon octicon-link"></span></a><a href="https://github.com/micnic/simpleU/wiki/Documentation">Documentation</a>
 </h3>
 
 <h2>
@@ -67,13 +67,18 @@
 <pre><code>npm install simpleu
 </code></pre>
 
+<p>or install globally</p>
+
+<pre><code>npm install -g simpleu
+</code></pre>
+
 <h2>
 <a name="running-a-test-suite" class="anchor" href="#running-a-test-suite"><span class="octicon octicon-link"></span></a>Running a test suite</h2>
 
-<pre><code>var simpleu = require('simpleu');
+<div class="highlight highlight-javascript"><pre><span class="kd">var</span> <span class="nx">simpleu</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">'simpleu'</span><span class="p">);</span>
 
-simpleu(/* tests object */);
-</code></pre>
+<span class="nx">simpleu</span><span class="p">(</span><span class="cm">/* tests object */</span><span class="p">);</span>
+</pre></div>
 
 <h2>
 <a name="structure-of-a-test" class="anchor" href="#structure-of-a-test"><span class="octicon octicon-link"></span></a>Structure of a test</h2>
@@ -93,6 +98,43 @@ simpleu(/* tests object */);
     }
 }
 </code></pre>
+
+<h2>
+<a name="running-from-command-line" class="anchor" href="#running-from-command-line"><span class="octicon octicon-link"></span></a>Running from command line</h2>
+
+<pre><code>simpleu /path/to/tests
+</code></pre>
+
+<h2>
+<a name="structure-of-a-test-from-command-line" class="anchor" href="#structure-of-a-test-from-command-line"><span class="octicon octicon-link"></span></a>Structure of a test from command line</h2>
+
+<div class="highlight highlight-javascript"><pre><span class="kd">var</span> <span class="nx">tests</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">'test one'</span><span class="o">:</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">test</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">test</span><span class="p">.</span><span class="nx">params</span>
+        <span class="nx">test</span><span class="p">.</span><span class="nx">ok</span><span class="p">(</span><span class="kc">true</span><span class="p">);</span>
+        <span class="nx">test</span><span class="p">.</span><span class="nx">done</span><span class="p">();</span>
+    <span class="p">},</span>
+    <span class="s1">'test four'</span><span class="o">:</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">test</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">setTimeout</span><span class="p">(</span><span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+            <span class="nx">test</span><span class="p">.</span><span class="nx">done</span><span class="p">();</span>
+        <span class="p">},</span> <span class="mi">500</span><span class="p">);</span>
+        <span class="nx">test</span><span class="p">.</span><span class="nx">ok</span><span class="p">(</span><span class="kc">true</span><span class="p">);</span>
+
+    <span class="p">},</span>
+    <span class="s1">'test five'</span><span class="o">:</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">test</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">test</span><span class="p">.</span><span class="nx">ok</span><span class="p">(</span><span class="kc">true</span><span class="p">);</span>
+        <span class="nx">test</span><span class="p">.</span><span class="nx">done</span><span class="p">();</span>
+    <span class="p">},</span>
+    <span class="s1">'test six'</span><span class="o">:</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">test</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">test</span><span class="p">.</span><span class="nx">ok</span><span class="p">(</span><span class="kc">true</span><span class="p">);</span>
+        <span class="nx">test</span><span class="p">.</span><span class="nx">done</span><span class="p">();</span>
+    <span class="p">}</span>
+<span class="p">};</span>
+
+<span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="nx">tests</span><span class="o">:</span> <span class="nx">tests</span>
+<span class="p">};</span>
+</pre></div>
         </section>
 
         <aside id="sidebar">
