@@ -4,20 +4,20 @@ var assert = require('assert'),
 	domain = require('domain');
 
 // Run a suite of test cases
-module.exports = function (tests, config) {
+module.exports = function runSuite(tests, config, callback) {
 
 	var context = new domain.Domain(),
 		name,
 		keys = Object.keys(tests),
 		start,
 		timer,
-		finishedInTime = true,
+		finished = true,
 		test = {},
 		timeout;
 
 	// The end of a test case
 	function done() {
-		if (finishedInTime){
+		if (finished){
 			clearTimeout(timer);
 
 			console.log('\u001b[37m' + name +
@@ -50,11 +50,12 @@ module.exports = function (tests, config) {
 		if (config.end && typeof config.end === 'function') {
 			config.end();
 		}
+		callback();
 	}
 
 	// Domain run callback
 	function onRun() {
-		if (finishedInTime) {
+		if (finished) {
 			name = keys.shift();
 			runNext();
 		}
@@ -75,7 +76,7 @@ module.exports = function (tests, config) {
 
 	function setTimer() {
 		timer = setTimeout(function () {
-			finishedInTime = false;
+			finished = false;
 			throw new Error('time limit has been exceeded');
 		}, timeout);
 	}

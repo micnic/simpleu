@@ -1,6 +1,6 @@
 {
 	"name": "simpleu",
-	"version": "0.0.2",
+	"version": "0.0.3",
 	"description": "Simple Unit Testing Tool",
 	"keywords": [
 		"simple",
@@ -21,6 +21,10 @@
 		"url": "https://github.com/micnic"
 	},
 	"main": "index",
+	"preferGlobal": "true",
+	"bin": {
+		"simpleu": "./bin/simpleu.js"
+	},
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/micnic/simpleU"

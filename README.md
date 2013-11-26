@@ -1,5 +1,5 @@
 <img src="https://raw.github.com/micnic/simpleU/master/logo.png"/>
-# simpleU 0.0.2
+# simpleU 0.0.3
 
 simpleU is a simple unit testing tool for Node.JS that has some special features:
 
@@ -23,11 +23,17 @@ simpleU is a simple unit testing tool for Node.JS that has some special features
 
     npm install simpleu
 
+or install globally
+
+    npm install -g simpleu
+
 ## Running a test suite
 
-    var simpleu = require('simpleu');
+```javascript
+var simpleu = require('simpleu');
 
-    simpleu(/* tests object */);
+simpleu(/* tests object */);
+```
 
 ## Structure of a test
 
@@ -45,3 +51,38 @@ simpleU is a simple unit testing tool for Node.JS that has some special features
             test.done();
         }
     }
+
+## Running from command line
+
+    simpleu /path/to/tests
+
+## Structure of a test from command line
+
+```javascript
+var tests = {
+    'test one': function (test) {
+        test.params
+        test.ok(true);
+        test.done();
+    },
+    'test four': function (test) {
+        setTimeout(function () {
+            test.done();
+        }, 500);
+        test.ok(true);
+
+    },
+    'test five': function (test) {
+        test.ok(true);
+        test.done();
+    },
+    'test six': function (test) {
+        test.ok(true);
+        test.done();
+    }
+};
+
+module.exports = {
+    tests: tests
+};
+```

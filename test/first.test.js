@@ -1,6 +1,5 @@
-var simpleu = require('../index');
 
-simpleu({
+var tests = {
     'test one': function (test) {
         test.params
         test.ok(true);
@@ -9,7 +8,7 @@ simpleu({
     'test four': function (test) {
         setTimeout(function () {
             test.done();
-        }, 2000);
+        }, 500);
         test.ok(true);
 
     },
@@ -21,7 +20,8 @@ simpleu({
         test.ok(true);
         test.done();
     }
-}, {
+};
+var config = {
     'timeout': 1000,
     'start': function (callback) {
         console.log('start');
@@ -38,4 +38,9 @@ simpleu({
     'end': function () {
         console.log('end');
     }
-});
+};
+
+module.exports = {
+    'tests': tests,
+    'config':config
+};
