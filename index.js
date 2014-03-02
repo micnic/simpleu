@@ -4,39 +4,69 @@ var assert = require('assert'),
 	domain = require('domain');
 
 // Run a suite of test cases
-module.exports = function runSuite(tests, config, callback) {
+module.exports = function (tests, config, callback) {
 
 	var context = new domain.Domain(),
-		name,
+		failed = false,
 		keys = Object.keys(tests),
+		name,
 		start,
-		timer,
-		finished = true,
 		test = {},
-		timeout;
+		timer;
+
+	// Print the succes message for a test case
+	function printSucces() {
+
+		var print = '\u001b[37m' + name + ': \u001b[32mSucces ',
+			time = Date.now() - start;
+
+		// Print execution time color depending on its value
+		if (time < config.timeout / 3) {
+			print += '\u001b[34m';
+		} else if (time < 2 * config.timeout / 3) {
+			print += '\u001b[33m';
+		} else {
+			print += '\u001b[31m';
+		}
+
+		// Add the execution time value and reset color
+		print += '[' + time + ' ms]\u001b[39m';
+
+		// Print the message
+		console.log(print);
+	}
 
 	// The end of a test case
 	function done() {
-		if (finished){
+		if (!failed){
 			clearTimeout(timer);
 
-			console.log('\u001b[37m' + name +
-				': \u001b[32mSucces \u001b[34m[' + (Date.now() - start) +
-				'ms]\u001b[39m');
+			printSucces();
 
-			if (config.after && typeof config.after === 'function') {
-				config.after(function () {
-					context.run(onRun);
-				})
-			} else {
-				context.run(onRun);
-			}
+			// Execute a function on test end if defined
+			onAfter();
 		}
 	}
 
-	// Test case before callback
+	// Execute a function after a test case
+	function onAfter() {
+		if (typeof config.after === 'function') {
+			config.after(function () {
+				context.run(onRun);
+			})
+		} else {
+			context.run(onRun);
+		}
+	}
+
+	// Execute a function before a test case
 	function onBefore() {
-		if (config.before && typeof config.before === 'function') {
+
+		// Set timeout for the test
+		setTimer();
+
+		// Prepare the test and run it
+		if (typeof config.before === 'function') {
 			config.before(function () {
 				tests[name](test);
 			});
@@ -47,15 +77,21 @@ module.exports = function runSuite(tests, config, callback) {
 
 	// Test suite end callback
 	function onEnd() {
-		if (config.end && typeof config.end === 'function') {
+
+		// Execute the test suite end function
+		if (typeof config.end === 'function') {
 			config.end();
 		}
-		callback();
+
+		// Execute the callback when all tests are done
+		if (typeof callback === 'function') {
+			callback();
+		}
 	}
 
 	// Domain run callback
 	function onRun() {
-		if (finished) {
+		if (!failed) {
 			name = keys.shift();
 			runNext();
 		}
@@ -65,7 +101,6 @@ module.exports = function runSuite(tests, config, callback) {
 	function runNext() {
 		if (typeof name === 'string' && typeof tests[name] === 'function') {
 			start = Date.now();
-			setTimer();
 			onBefore();
 		} else if (typeof name === 'string') {
 			throw new Error('Invalid Test Structure');
@@ -74,16 +109,18 @@ module.exports = function runSuite(tests, config, callback) {
 		}
 	}
 
+	// Set a limit for test execution
 	function setTimer() {
 		timer = setTimeout(function () {
-			finished = false;
+			failed = true;
 			throw new Error('time limit has been exceeded');
-		}, timeout);
+		}, config.timeout);
 	}
 
 	// Start the test chain
 	function setup() {
 		context.on('error',function (error) {
+			clearTimeout(timer);
 			console.error(name + ': \u001b[31mFail\u001b[39m\n');
 			console.error(error.stack + '\n');
 		}).run(onRun);
@@ -105,18 +142,27 @@ module.exports = function runSuite(tests, config, callback) {
 		throws: assert.throws
 	};
 
+	//set black background
+	console.log('\u001b[39m');
+
 	// Show the number of tests to run
 	console.log('\u001b[37mRun ' + keys.length + ' tests:');
 
+	// Set an empty object for config if not defined
+	if (typeof config === 'function') {
+		callback = config;
+		config = {};
+	} else if (typeof config !== 'object') {
+		config = {};
+	}
+
 	// Set the timeout for a test case
-	if (config.timeout && typeof config.timeout === 'number') {
-		timeout = config.timeout;
-	} else {
-		timeout = 1000;
+	if (!config.timeout || typeof config.timeout !== 'number') {
+		config.timeout = 1000;
 	}
 
 	// Start the test suite
-	if (config.start && typeof config.start === 'function') {
+	if (typeof config.start === 'function') {
 		config.start(setup);
 	} else {
 		setup();

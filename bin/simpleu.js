@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 var fs = require('fs'),
-	runSuite = require('./../index'),
+	path = require('path'),
+	runSuite = require('simpleu'),
 	loaderObj = null,
 	start = 0;
 
@@ -66,7 +67,7 @@ function runner(testFiles, callback) {
 
 	if (testFile) {
 
-		testsFromFile = require(testFile),
+		testsFromFile = require(testFile);
 
 		// check test structure
 		if (testsFromFile.tests && testsFromFile.tests instanceof Object) {
@@ -85,11 +86,10 @@ function runner(testFiles, callback) {
 		console.log('\u001b[33mBegin test for file: ' + testFile);
 		var start = Date.now();
 		runSuite(testsObject, configObject, function () {
-			console.log('\n\u001b[34mTime [' + (Date.now() - start) + 'ms]');
+			console.log('\n\u001b[34mTime [' + (Date.now() - start) + ' ms]');
 			console.log('\u001b[33mEnd test for file: ' + testFile + '\n\n');
 
 			runner(testFiles, callback);
-
 		});
 	} else {
 		callback();
@@ -98,8 +98,7 @@ function runner(testFiles, callback) {
 
 function runFromPaths(arrPath, loader, callback) {
 
-	var mainDir = process.cwd() + '/',
-		fullPath = mainDir + arrPath.pop();
+	var fullPath = path.join(process.cwd(), arrPath.pop());
 
 	loader.setPath(fullPath);
 
@@ -125,9 +124,6 @@ if (process.argv.length < 3) {
 	throw new Error('simpleU: Need path to tests files');
 }
 
-//set black background
-console.log('\u001b[39m');
-
 runFromPaths(process.argv.slice(2), loaderObj, function () {
-	console.log('All tests finished \u001b[34m[' + (Date.now() - start) + 'ms]');
+	console.log('All tests finished \u001b[34m[' + (Date.now() - start) + ' ms]\u001b[39m');
 });

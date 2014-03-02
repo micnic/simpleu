@@ -3,13 +3,15 @@ var simpleu = require('simpleu');
 ```
 
 ## Run tests
-`simpleu(tests[, config])`
+`simpleu(tests[, config, callback])`
 
 tests: object
 
 config: object
 
-simpleU uses Node.JS [assert](http://nodejs.org/api/assert.html) core module to make the necessary assertions in the provided tests, each test is ran inside a anonymous function with the test as parameter. It is possible to make any amount of assertions on the test and then call the `.done()` method to end it. Also it is possible to configure the test suite by providing the timeout limit of a single test case and functions to be executed before and after each test or on the start or the end of the whole test suite.
+callback: function()
+
+simpleU uses Node.JS [assert](http://nodejs.org/api/assert.html) core module to make the necessary assertions in the provided tests, each test is ran inside a anonymous function with the test as parameter. It is possible to make any amount of assertions on the test and then call the `.done()` method to end it. Also it is possible to configure the test suite by providing the timeout limit of a single test case and functions to be executed before and after each test or on the start or the end of the whole test suite. Also, if it is necessary, an callback function can be defined to be executed when all test cases are done.
 
 ```javascript
 simpleu({
@@ -54,7 +56,7 @@ simpleu({
 SimpleU accepts unlimited number of parameters which can be files or folders, tests files must have extension `.test.js`.
 `config` attribute is optional.
 
-Structure of test file: 
+Structure of test file:
 ```javascript
 var tests = {
     'test one': function (test) {

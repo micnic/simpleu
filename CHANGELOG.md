@@ -1,3 +1,7 @@
+## 0.0.4
+- Added optional callback
+- Print succes messages with specific color execution time
+
 ## 0.0.3
 - Added command line support
 - Fixed empty config
