@@ -1,129 +1,170 @@
 #!/usr/bin/env node
+'use strict';
+
 var fs = require('fs'),
 	path = require('path'),
-	runSuite = require('simpleu'),
-	loaderObj = null,
-	start = 0;
+	simpleu = require('simpleu');
 
-var loader = function (path) {
-	this.path = path;
-	this.tests = [];
-}
-
-loader.prototype.setPath = function (path) {
-	this.path = path;
-	this.tests = [];
-}
-
-loader.prototype.loadFromDirectory = function (callback) {
-
-	function walk(dir, done) {
-
-		var results = [],
-			stats = fs.statSync(dir);
-
-		function chectFileType(file) {
-			if (file.slice(-8) === '.test.js') {
-				results.push(file);
-			}
-		}
-
-		// if specified path is file return this file as test
-		if (stats.isFile()) {
-			chectFileType(dir);
-			done(null, results);
-			return;
-		}
-
-		fs.readdir(dir, function (err, list) {
-			if (err) return done(err);
-			var pending = list.length;
-			if (!pending) return done(null, results);
-			list.forEach(function (file) {
-				file = dir + '/' + file;
-				fs.stat(file, function (err, stat) {
-					if (stat && stat.isDirectory()) {
-						walk(file, function (err, res) {
-							results = results.concat(res);
-							if (!--pending) done(null, results);
-						});
-					} else {
-						chectFileType(file);
-						if (!--pending) done(null, results);
-					}
-				});
-			});
-		});
-	}
-	walk(this.path, callback);
+// Unit test runner prototype constructor
+var runner = function () {
+	this.container = [];
 };
 
-function runner(testFiles, callback) {
+// Run the list of test files files
+runner.runSuite = function (files, index, callback) {
 
-	var testFile = testFiles.pop(),
-		testsFromFile,
-		testsObject,
-		configObject;
+	var filename = files[index],
+		start = 0,
+		suite = null;
 
-	if (testFile) {
+	// Check if there are more files to run
+	if (index < files.length) {
 
-		testsFromFile = require(testFile);
+		// Remove the previous test case and prepare the current one
+		delete require.cache[files[index - 1]];
+		suite = require(filename);
 
-		// check test structure
-		if (testsFromFile.tests && testsFromFile.tests instanceof Object) {
-			testsObject = testsFromFile.tests;
-		}else {
-			throw new Error('Invalid Test Structure');
+		// Check for the tests object
+		if (typeof suite.tests !== 'object') {
+			throw new Error('simpleU: Invalid Test Structure');
 		}
 
-		// set config for test
-		if (testsFromFile.config && testsFromFile.config instanceof Object) {
-			configObject = testsFromFile.config;
-		} else {
-			configObject = {};
+		// Check for the config object
+		if (typeof suite.config !== 'object') {
+			suite.config = {};
 		}
 
-		console.log('\u001b[33mBegin test for file: ' + testFile);
-		var start = Date.now();
-		runSuite(testsObject, configObject, function () {
-			console.log('\n\u001b[34mTime [' + (Date.now() - start) + ' ms]');
-			console.log('\u001b[33mEnd test for file: ' + testFile + '\n\n');
+		// Print message for current test suite
+		console.log('\u001b[33mFile: ' + filename);
 
-			runner(testFiles, callback);
+		// Get execution start time
+		start = Date.now();
+
+		// Execute the current test suite
+		simpleu(suite.tests, suite.config, function () {
+
+			// Print execution time for current test suite
+			console.log('\n\u001b[34mTime [' + (Date.now() - start) + ' ms]\n');
+
+			// Get next file to read
+			runner.runSuite(files, index + 1, callback);
 		});
 	} else {
 		callback();
 	}
-}
+};
 
-function runFromPaths(arrPath, loader, callback) {
+// Start a new unit tests runner
+runner.start = function (instance) {
 
-	var fullPath = path.join(process.cwd(), arrPath.pop());
+	var ready = 0,
+		total = process.argv.length - 2;
 
-	loader.setPath(fullPath);
+	// Check when the arguments are ready to run the test suites
+	function prepareArguments() {
 
-	loader.loadFromDirectory(function (err, tests) {
-		if (err) {
-			throw new Error(err);
+		var start = Date.now();
+
+		// Show a message when all test suites are done
+		function onEnd() {
+
+			var end = Date.now() - start;
+
+			// Print the message
+			console.log('All tests are done \u001b[34m[' + end + ' ms]');
+
+			// Reset to white color
+			process.stdout.write('\u001b[39m');
 		}
-		runner(tests, function () {
 
-			if (arrPath.length > 0) {
-				runFromPaths(arrPath, loader, callback);
+		// Increase the number of ready arguments
+		ready++;
+
+		// Check if all arguments are ready
+		if (ready === total) {
+			runner.runSuite(instance.container, 0, onEnd);
+		}
+	}
+
+	// Get the provided paths
+	process.argv.slice(2).forEach(function (argument) {
+
+		var location = path.join(process.cwd(), argument);
+
+		// Check root directory stats and prepare the cache container
+		fs.stat(location, function (error, stats) {
+			if (error) {
+				console.error('\nsimpleU: Can not read "' + location + '"');
+				throw error;
+			} else if (stats.isDirectory()) {
+				instance.addDirectory(location, prepareArguments);
 			} else {
-				callback();
+				instance.container.push(location);
+				prepareArguments();
 			}
-		})
+		});
 	});
-}
+};
 
-loaderObj = new loader();
-start = Date.now();
+// Cache the provided directory
+runner.prototype.addDirectory = function (location, callback) {
 
-if (process.argv.length < 3) {
-	throw new Error('simpleU: Need path to tests files');
-}
+	var that = this;
 
-runFromPaths(process.argv.slice(2), loaderObj, function () {
-	console.log('All tests finished \u001b[34m[' + (Date.now() - start) + ' ms]\u001b[39m');
-});
+	// Process the firectory elements
+	function processDirectory(files) {
+
+		// Add the files
+		if (files.length) {
+			that.addElement(location, files, callback);
+		} else {
+			callback();
+		}
+	}
+
+	// Read the directory content
+	fs.readdir(location, function (error, files) {
+		if (error) {
+			console.error('\nsimpleU: Can not read "' + location + '"');
+			console.error(error.stack + '\n');
+		} else {
+			processDirectory(files);
+		}
+	});
+};
+
+// Check the stats of the provided location
+runner.prototype.addElement = function (location, stack, callback) {
+
+	var name = path.join(location, stack.shift()),
+		that = this;
+
+	// Get next element
+	function getNext() {
+		if (stack.length) {
+			that.addElement(location, stack, callback);
+		} else {
+			callback();
+		}
+	}
+
+	// Check element stats and add it to the cache
+	fs.stat(name, function (error, stats) {
+
+		// Check for errors and add the element to the cache
+		if (error) {
+			console.error('\nsimpleU: Can not read "' + name + '"');
+			console.error(error.stack + '\n');
+		} else if (stats.isDirectory()) {
+			that.addDirectory(name, getNext);
+		} else if (name.substr(-8) === '.test.js') {
+			that.container.push(name);
+			getNext();
+		} else {
+			getNext();
+		}
+	});
+};
+
+// Start the tests processing
+runner.start(new runner());

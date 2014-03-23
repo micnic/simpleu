@@ -1,5 +1,5 @@
 <img src="https://raw.github.com/micnic/simpleU/master/logo.png"/>
-# simpleU 0.0.4
+# simpleU 0.0.5
 
 simpleU is a simple unit testing tool for Node.JS that has some special features:
 
@@ -35,7 +35,7 @@ var simpleu = require('simpleu');
 simpleu(/* tests object */);
 ```
 
-## Structure of a test
+## Structure of a test suite
 
     {
         'test name 1': function (test) {

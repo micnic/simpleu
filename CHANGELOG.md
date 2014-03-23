@@ -1,3 +1,6 @@
+## 0.0.5
+- Improved command line test runner
+
 ## 0.0.4
 - Added optional callback
 - Print succes messages with specific color execution time

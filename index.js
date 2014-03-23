@@ -21,12 +21,10 @@ module.exports = function (tests, config, callback) {
 			time = Date.now() - start;
 
 		// Print execution time color depending on its value
-		if (time < config.timeout / 3) {
-			print += '\u001b[34m';
-		} else if (time < 2 * config.timeout / 3) {
-			print += '\u001b[33m';
-		} else {
+		if (time > 2 * config.timeout / 3) {
 			print += '\u001b[31m';
+		} else if (time > config.timeout / 3) {
+			print += '\u001b[33m';
 		}
 
 		// Add the execution time value and reset color
@@ -38,7 +36,7 @@ module.exports = function (tests, config, callback) {
 
 	// The end of a test case
 	function done() {
-		if (!failed){
+		if (!failed) {
 			clearTimeout(timer);
 
 			printSucces();
@@ -50,10 +48,15 @@ module.exports = function (tests, config, callback) {
 
 	// Execute a function after a test case
 	function onAfter() {
+
+		// Callback for after function
+		function afterCallback() {
+			context.run(onRun);
+		}
+
+		// After test process
 		if (typeof config.after === 'function') {
-			config.after(function () {
-				context.run(onRun);
-			})
+			config.after(afterCallback);
 		} else {
 			context.run(onRun);
 		}
@@ -62,15 +65,17 @@ module.exports = function (tests, config, callback) {
 	// Execute a function before a test case
 	function onBefore() {
 
-		// Set timeout for the test
-		setTimer();
+		// Callback for before function
+		function beforeCallback() {
+			setTimer();
+			tests[name](test);
+		}
 
-		// Prepare the test and run it
+		// Before test process
 		if (typeof config.before === 'function') {
-			config.before(function () {
-				tests[name](test);
-			});
+			config.before(beforeCallback);
 		} else {
+			setTimer();
 			tests[name](test);
 		}
 	}
@@ -84,9 +89,24 @@ module.exports = function (tests, config, callback) {
 		}
 
 		// Execute the callback when all tests are done
-		if (typeof callback === 'function') {
+		if (!failed && typeof callback === 'function') {
 			callback();
 		}
+	}
+
+	// Domain error listener
+	function onError(error) {
+		failed = true;
+		clearTimeout(timer);
+		console.error(name + ': \u001b[31mFail\u001b[39m\n');
+		console.error(error.stack + '\n');
+		onEnd();
+	}
+
+	// Timeout listener
+	function onTimeout() {
+		failed = true;
+		throw new Error('Time limit has been exceeded');
 	}
 
 	// Domain run callback
@@ -111,19 +131,12 @@ module.exports = function (tests, config, callback) {
 
 	// Set a limit for test execution
 	function setTimer() {
-		timer = setTimeout(function () {
-			failed = true;
-			throw new Error('time limit has been exceeded');
-		}, config.timeout);
+		timer = setTimeout(onTimeout, config.timeout);
 	}
 
 	// Start the test chain
 	function setup() {
-		context.on('error',function (error) {
-			clearTimeout(timer);
-			console.error(name + ': \u001b[31mFail\u001b[39m\n');
-			console.error(error.stack + '\n');
-		}).run(onRun);
+		context.on('error', onError).run(onRun);
 	}
 
 	// Define the test object
@@ -142,11 +155,8 @@ module.exports = function (tests, config, callback) {
 		throws: assert.throws
 	};
 
-	//set black background
-	console.log('\u001b[39m');
-
 	// Show the number of tests to run
-	console.log('\u001b[37mRun ' + keys.length + ' tests:');
+	console.log('\u001b[39m\u001b[37mRunning ' + keys.length + ' tests:\n');
 
 	// Set an empty object for config if not defined
 	if (typeof config === 'function') {
